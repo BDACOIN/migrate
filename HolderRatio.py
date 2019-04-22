@@ -10,7 +10,8 @@ import copy
 import asyncio
 
 # 全ホルダーの枚数や順位、比率バランスを辞書で得る
-# BurnやらMintやらCollectTokenやら、入り混じっていて、イベント記録を集めて枚数出すのは危ないので
+# BurnやらMintやらCollectTokenやら、うずら経由やらが入り混じっていて、
+# イベント記録を集めて枚数を計算して出すのは危ないので
 # etherscanのホルダー結果をそのまま格納していく。
 
 CONTRACT_ADD = "0xF6CaA4bebD8Fab8489bC4708344d9634315c4340" # BDA v1.0
