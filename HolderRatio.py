@@ -18,18 +18,13 @@ HOLDERS_URL = "https://etherscan.io/token/generic-tokenholders2?a={}&s=0&p=".for
 
 def getData(sess, page):
     url = HOLDERS_URL + page
-    print("Retrieving page", page)
+    # print("Retrieving page", page)
     return BeautifulSoup(sess.get(url).text, 'html.parser')
 
 def getPage(sess, page):
     table = getData(sess, str(int(page))).find('table')
     return [[X.text.strip() for X in row.find_all('td')] for row in table.find_all('tr')]
 
-# 外部が参照するデータ
-externalHoldersRatioData = {}
-
-# 今蓄積してる最中のデータ
-internalHoldersRatioData = {}
 
 def FilterMasterWallet(address: str) -> str:
     target = "0x89c9F8700e978FB87AD5Cc159B14E380F8E70352"
@@ -42,6 +37,13 @@ def FilterOldMasterWallet(address: str) -> str:
     if address.upper() == target.upper():
         return address + " (BDA Old Master Wallet)"
     return address
+
+def FilterOldPoolWallet(address: str) -> str:
+    target = "0x4da8a2fd6af6e9305fbe1ade05dc224ae0fe7fde"
+    if address.upper() == target.upper():
+        return address + " (BDA Old Pool Wallet)"
+    return address
+
 
 def FilterUzurasWallet(address: str) -> str:
     target = "0x5ff15142cf8f34e917364674165bc2c69b3ae9f3"
@@ -68,10 +70,24 @@ def FilterPresaleMicroWallet(address: str) -> str:
         return address + " (Presale Micro Wallet)"
     return address
 
+# 外部が参照するデータ
+externalHoldersRatioData = {}
+
+# 外部が参照するデータ
+externalSpecialHoldersRatioData = {}
+
+# 今蓄積してる最中のデータ
+internalHoldersRatioData = {}
+
+# 特別
+internalSpecialHoldersRatioData = {}
+
 
 async def ReCalculateHoldersRatio():
     global externalHoldersRatioData
+    global externalSpecialHoldersRatioData
     global internalHoldersRatioData
+    global internalSpecialHoldersRatioData
 
     resp = requests.get(HOLDERS_URL)
     sess = requests.Session()
@@ -93,11 +109,17 @@ async def ReCalculateHoldersRatio():
             # internalHoldersRatioData[ d[1] ] = [ d[0], d[2], d[3] ]
             d[1] = FilterMasterWallet(d[1])
             d[1] = FilterOldMasterWallet(d[1])
+            d[1] = FilterOldPoolWallet(d[1])
             d[1] = FilterUzurasWallet(d[1])
             d[1] = FilterPresaleFullWallet(d[1])
             d[1] = FilterPresaleHalfWallet(d[1])
             d[1] = FilterPresaleMicroWallet(d[1])
-            internalHoldersRatioData[ d[1] ] = float(d[2])
+
+            # 空白入ってるなら特別
+            if " " in d[1]:
+                internalSpecialHoldersRatioData[ d[1] ] = float(d[2])
+            else:
+                internalHoldersRatioData[ d[1] ] = float(d[2])
 
             # 有効なデータがあった
             data_exist = True
@@ -113,10 +135,46 @@ async def ReCalculateHoldersRatio():
     # 時間をかけてデータを蓄積しているため、このようにすべてを蓄積しおえた
     # タイミングで上書きする。
     externalHoldersRatioData = copy.deepcopy(internalHoldersRatioData)
+    externalSpecialHoldersRatioData = copy.deepcopy(internalSpecialHoldersRatioData)
 
+
+def printNormalDistributeAttribute():
+    tempaddress = []
+    tempamounts = []
+    for address in externalHoldersRatioData.keys():
+        tempaddress.append(address)
+        tempamounts.append(externalHoldersRatioData[address])
+
+        if len(tempaddress) >= 18:
+            print(tempaddress)
+            print("-------------------------------------\n")
+            print(tempamounts)
+            print("=====================================\n\n")
+
+            tempaddress.clear()
+            tempamounts.clear()
+
+    if len(tempaddress):
+        print(tempaddress)
+        print("-------------------------------------\n")
+        print(tempamounts)
+        print("=====================================\n\n")
+
+
+def printSpecialDistributeAttribute():
+    print ("先行フリーズ対象")
+    print ( ['0x5ff15142cf8f34e917364674165bc2c69b3ae9f3', '0x288652040352d542a1ec0d5ce4c7be266fe82b1f', '0xc2ed388c5255155014c81ad8834850fe63d00306', '0xed1c69b9c08602c75a576c6bd0ce602f9cbf838f', '0xfc901d07884095c3d8d2fea42c392ba8468b63a1' ] )
+    print("-------------------------------------\n")
+    pprint.pprint(externalSpecialHoldersRatioData)
+    print("=====================================\n\n")
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     results = loop.run_until_complete(ReCalculateHoldersRatio())
     print(results)
-    pprint.pprint(externalHoldersRatioData)
+
+    printSpecialDistributeAttribute()
+
+    printNormalDistributeAttribute()
+
+    # pprint.pprint(externalHoldersRatioData)
