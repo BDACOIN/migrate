@@ -26,45 +26,45 @@ def getPage(sess, page):
     return [[X.text.strip() for X in row.find_all('td')] for row in table.find_all('tr')]
 
 
-def FilterMasterWallet(address: str) -> str:
+def filterMasterWallet(address: str) -> str:
     target = "0x89c9F8700e978FB87AD5Cc159B14E380F8E70352"
     if address.upper() == target.upper():
         return address + " (BDA NEW Master Wallet)"
     return address
 
-def FilterOldMasterWallet(address: str) -> str:
+def filterOldMasterWallet(address: str) -> str:
     target = "0x25862c0a85a635e1972d3c4f47d909bc71fe4659"
     if address.upper() == target.upper():
         return address + " (BDA Old Master Wallet)"
     return address
 
-def FilterOldPoolWallet(address: str) -> str:
+def filterOldPoolWallet(address: str) -> str:
     target = "0x4da8a2fd6af6e9305fbe1ade05dc224ae0fe7fde"
     if address.upper() == target.upper():
         return address + " (BDA Old Pool Wallet)"
     return address
 
 
-def FilterUzurasWallet(address: str) -> str:
+def filterUzurasWallet(address: str) -> str:
     target = "0x5ff15142cf8f34e917364674165bc2c69b3ae9f3"
     if address.upper() == target.upper():
         return address + " (UZURAS Wallet)"
     return address
 
-def FilterPresaleFullWallet(address: str) -> str:
+def filterPresaleFullWallet(address: str) -> str:
     target = [ "0x494Da578D0470A2E43B8668826De87e6BC74bECf", "0xc2ed388c5255155014C81aD8834850Fe63d00306", "0x288652040352D542A1Ec0d5Ce4c7be266FE82b1f",  "0xed1C69B9c08602c75A576c6Bd0cE602f9CbF838F"]
     target = list(map(lambda s: s.upper(), target))
     if address.upper() in target:
         return address + " (Presale Full Wallet)"
     return address
 
-def FilterPresaleHalfWallet(address: str) -> str:
+def filterPresaleHalfWallet(address: str) -> str:
     target = "0xFc901d07884095C3D8d2FEa42c392BA8468b63a1"
     if address.upper() == target.upper():
         return address + " (Presale Half Wallet)"
     return address
 
-def FilterPresaleMicroWallet(address: str) -> str:
+def filterPresaleMicroWallet(address: str) -> str:
     target = "0x7607aEDB36183DEb0474037B8783f31d2026a36f"
     if address.upper() == target.upper():
         return address + " (Presale Micro Wallet)"
@@ -83,7 +83,7 @@ internalHoldersRatioData = {}
 internalSpecialHoldersRatioData = {}
 
 
-async def ReCalculateHoldersRatio():
+async def reCalculateHoldersRatio():
     global externalHoldersRatioData
     global externalSpecialHoldersRatioData
     global internalHoldersRatioData
@@ -107,13 +107,13 @@ async def ReCalculateHoldersRatio():
 
             d[2] = d[2].replace(",", "") # 文字列中に、桁数を見やすくする際に入ってる「,」を除去
             # internalHoldersRatioData[ d[1] ] = [ d[0], d[2], d[3] ]
-            d[1] = FilterMasterWallet(d[1])
-            d[1] = FilterOldMasterWallet(d[1])
-            d[1] = FilterOldPoolWallet(d[1])
-            d[1] = FilterUzurasWallet(d[1])
-            d[1] = FilterPresaleFullWallet(d[1])
-            d[1] = FilterPresaleHalfWallet(d[1])
-            d[1] = FilterPresaleMicroWallet(d[1])
+            d[1] = filterMasterWallet(d[1])
+            d[1] = filterOldMasterWallet(d[1])
+            d[1] = filterOldPoolWallet(d[1])
+            d[1] = filterUzurasWallet(d[1])
+            d[1] = filterPresaleFullWallet(d[1])
+            d[1] = filterPresaleHalfWallet(d[1])
+            d[1] = filterPresaleMicroWallet(d[1])
 
             # 空白入ってるなら特別
             if " " in d[1]:
@@ -170,11 +170,10 @@ def printSpecialDistributeAttribute():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    results = loop.run_until_complete(ReCalculateHoldersRatio())
+    results = loop.run_until_complete(reCalculateHoldersRatio())
     print(results)
 
     printSpecialDistributeAttribute()
-
     printNormalDistributeAttribute()
 
     # pprint.pprint(externalHoldersRatioData)
