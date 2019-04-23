@@ -8,6 +8,7 @@ import time
 import pprint
 import copy
 import asyncio
+import math
 
 # 全ホルダーの枚数や順位、比率バランスを辞書で得る
 # BurnやらMintやらCollectTokenやら、うずら経由やらが入り混じっていて、
@@ -144,7 +145,7 @@ def printNormalDistributeAttribute():
     tempamounts = []
     for address in externalHoldersRatioData.keys():
         tempaddress.append(address)
-        tempamounts.append(externalHoldersRatioData[address])
+        tempamounts.append(math.ceil(externalHoldersRatioData[address]))
 
         if len(tempaddress) >= 18:
             print(tempaddress)
